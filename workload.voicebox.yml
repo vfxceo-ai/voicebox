@@ -1,5 +1,5 @@
 description: Voicebox web UI and FastAPI backend for voice cloning and agent speech
-cuda: "12090"
+cuda: ""
 sharedMemory: 4
 
 containers:
@@ -8,7 +8,7 @@ containers:
     port: 17493
     maxConnection: 20
     containerCommand: ""
-    isCredential: false
+    isCredential: true
     containerEnvs:
       - HOST: "0.0.0.0"
       - PORT: "17493"
