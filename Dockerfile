@@ -33,14 +33,21 @@ RUN pip install --no-cache-dir --upgrade pip
 COPY backend/requirements.txt .
 
 # Preinstall CUDA-enabled PyTorch wheels so NVIDIA-backed workloads use the GPU path.
+ENV PYTHONPATH=/install/lib/python3.11/site-packages
 RUN pip install --no-cache-dir --prefix=/install \
     --index-url https://download.pytorch.org/whl/cu128 \
     torch torchvision torchaudio
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# Keep the CUDA PyTorch stack authoritative. Installing the upstream
+# requirements verbatim lets qwen-tts/torchaudio resolve torch again, which can
+# replace the GPU wheel with a mixed runtime and break lazy Transformers imports.
+RUN grep -v -E '^(torch|torchvision|torchaudio|qwen-tts)([<>= ].*)?$' requirements.txt > requirements.gcube.txt
+RUN pip install --no-cache-dir --prefix=/install -r requirements.gcube.txt
 RUN pip install --no-cache-dir --prefix=/install --no-deps chatterbox-tts
 RUN pip install --no-cache-dir --prefix=/install --no-deps hume-tada
-RUN pip install --no-cache-dir --prefix=/install \
+RUN pip install --no-cache-dir --prefix=/install --no-deps \
     git+https://github.com/QwenLM/Qwen3-TTS.git
+RUN python -c "import torch, torchvision, torchaudio, qwen_tts; from transformers import AutoProcessor; print('torch', torch.__version__, 'cuda', torch.version.cuda, 'cuda_available', torch.cuda.is_available())"
 
 # === Stage 3: Runtime ===
 FROM python:3.11-slim
