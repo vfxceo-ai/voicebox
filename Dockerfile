@@ -62,17 +62,17 @@ COPY --from=frontend --chown=voicebox:voicebox /build/web/dist /app/frontend/
 COPY --chown=voicebox:voicebox entrypoint.sh /app/entrypoint.sh
 
 RUN chmod +x /app/entrypoint.sh && \
-    mkdir -p /data/voicebox /data/models && \
-    chown -R voicebox:voicebox /app /data
+    mkdir -p /data/voicebox /models && \
+    chown -R voicebox:voicebox /app /data /models
 
 USER voicebox
 
 ENV HOST=0.0.0.0
 ENV PORT=17493
 ENV VOICEBOX_DATA_DIR=/data/voicebox
-ENV VOICEBOX_MODELS_DIR=/data/models
-ENV HF_HOME=/data/models
-ENV HF_HUB_CACHE=/data/models
+ENV VOICEBOX_MODELS_DIR=/models
+ENV HF_HOME=/models
+ENV HF_HUB_CACHE=/models
 ENV NUMBA_CACHE_DIR=/tmp/numba_cache
 
 EXPOSE 17493

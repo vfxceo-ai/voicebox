@@ -1,13 +1,21 @@
-name: voicebox-webui
 description: Voicebox web UI and FastAPI backend for voice cloning and agent speech
+cuda: "12090"
+sharedMemory: 4
 
-image: ghcr.io/vfxceo-ai/voicebox:latest
-port: 17493
+containers:
+  - containerImage: vfxceo-ai/voicebox:latest
+    repo: ghcr.io
+    port: 17493
+    maxConnection: 20
+    containerCommand: ""
+    isCredential: false
+    containerEnvs:
+      - HOST: "0.0.0.0"
+      - PORT: "17493"
+      - VOICEBOX_DATA_DIR: "/data/voicebox"
+      - VOICEBOX_MODELS_DIR: "/models"
+    userStorages:
+      - "98": "/data"
 
-gpu: 028
-cuda: 12090
-maxConnection: 20
-
-userStorages:
-  - storage: gcube 백업 저장
-    mountPath: /data
+gpuSpecs:
+  - gpuCode: "028"
