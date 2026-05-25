@@ -64,14 +64,16 @@ def to_storage_path(path: str | Path) -> str:
     """Convert a filesystem path to a DB-safe path relative to the data dir."""
     resolved_path = Path(path).resolve()
 
+    try:
+        return str(resolved_path.relative_to(_data_dir))
+    except ValueError:
+        pass
+
     relative_to_any_data_dir = _path_relative_to_any_data_dir(resolved_path)
     if relative_to_any_data_dir is not None:
         return str(relative_to_any_data_dir)
 
-    try:
-        return str(resolved_path.relative_to(_data_dir))
-    except ValueError:
-        return str(resolved_path)
+    return str(resolved_path)
 
 
 def resolve_storage_path(path: str | Path | None) -> Path | None:
@@ -93,6 +95,15 @@ def resolve_storage_path(path: str | Path | None) -> Path | None:
     # baked in (e.g. "data/profiles/..."). Joining those directly with
     # _data_dir produces a spurious "<data_dir>/data/profiles/..." nest.
     if stored_path.parts and stored_path.parts[0] == "data":
+        stored_path = (
+            Path(*stored_path.parts[1:]) if len(stored_path.parts) > 1 else Path()
+        )
+
+    # Some Linux deployments use a data dir such as /data/voicebox. Older
+    # to_storage_path() stripped at the generic /data component first and stored
+    # "voicebox/profiles/...", which resolves to /data/voicebox/voicebox/...
+    # unless we rebase it here.
+    if stored_path.parts and stored_path.parts[0] == _data_dir.name:
         stored_path = (
             Path(*stored_path.parts[1:]) if len(stored_path.parts) > 1 else Path()
         )
