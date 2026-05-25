@@ -45,6 +45,7 @@ RUN grep -v -E '^(torch|torchvision|torchaudio|qwen-tts)([<>= ].*)?$' requiremen
 RUN pip install --no-cache-dir --prefix=/install -r requirements.gcube.txt
 RUN pip install --no-cache-dir --prefix=/install --no-deps chatterbox-tts
 RUN pip install --no-cache-dir --prefix=/install --no-deps hume-tada
+RUN pip install --no-cache-dir --prefix=/install sox
 RUN pip install --no-cache-dir --prefix=/install --no-deps \
     git+https://github.com/QwenLM/Qwen3-TTS.git
 RUN python -c "import torch, torchvision, torchaudio, qwen_tts; from transformers import AutoProcessor; print('torch', torch.__version__, 'cuda', torch.version.cuda, 'cuda_available', torch.cuda.is_available())"
@@ -60,6 +61,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     curl \
+    sox \
+    libsox-fmt-all \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=backend-builder /install /usr/local
